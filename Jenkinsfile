@@ -9,22 +9,21 @@ pipeline {
     stages {
         stage('Checkout') {
             steps {
-                // Get the code from the GitHub repository
-                checkout([$class: 'GitSCM', branches: [[name: '*/master']], doGenerateSubmoduleConfigurations: false, extensions: [], submoduleCfg: [], userRemoteConfigs: [[url: 'https://github.com/AbdullahNaif1/ShoppingCart.git']]])
+                checkout scm
             }
         }
 
         stage('Build') {
             steps {
-                // Build the application. Replace this with your build command if it's different.
-                sh 'make build' // Assuming a Makefile is present with a 'build' target
+                // Build the application using Maven
+                sh 'mvn clean install' 
             }
         }
 
         stage('Test') {
             steps {
-                // Run your tests here. Replace this with your test command if it's different.
-                sh 'make test' // Assuming a Makefile is present with a 'test' target
+                // Run your tests here, for example using Maven
+                sh 'mvn test' 
             }
         }
 
@@ -39,7 +38,7 @@ pipeline {
 
         stage('Docker Push') {
             steps {
-                // Push the Docker image to a registry. Make sure to replace 'your-registry-url' and 'your-credentials-id'.
+                // Push the Docker image to a registry
                 script {
                     docker.withRegistry('https://your-registry-url', 'your-credentials-id') {
                         docker.image("${DOCKER_IMAGE}").push()
@@ -50,7 +49,7 @@ pipeline {
 
         stage('Docker Deploy') {
             steps {
-                // Deploy using Docker. Adjust the service name and other settings as needed.
+                // Deploy using Docker
                 sh "docker service update --image ${DOCKER_IMAGE} your_service_name || docker service create --name your_service_name ${DOCKER_IMAGE}"
             }
         }
